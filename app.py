@@ -69,8 +69,7 @@ if model is not None and scaler is not None:
                 user_inputs['Age']
             ]])
 
-            scaled_input_data =     .transform(input_data)
-
+            scaled_input_data = scaler.transform(input_data)
             prediction_prob = model.predict(scaled_input_data)[0][0]
             prediction_class = 1 if prediction_prob > 0.5 else 0
 
