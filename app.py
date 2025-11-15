@@ -23,50 +23,64 @@ def load_model_and_scaler():
 
 model, scaler = load_model_and_scaler()
 
-def get_feature_names():
-    return [
-        'Pregnancies',
-        'Glucose',
-        'BloodPressure',
-        'SkinThickness',
-        'Insulin',
-        'BMI',
-        'DiabetesPedigreeFunction',
-        'Age'
-    ]
+defaults = {
+    "pregnancies": 1,
+    "glucose": 100,
+    "blood_pressure": 70,
+    "skin_thickness": 20,
+    "insulin": 80,
+    "bmi": 32.0,
+    "pedigree": 0.4,
+    "age": 30
+}
+
+if 'prediction_made' not in st.session_state:
+    st.session_state.prediction_made = False
+    for key, value in defaults.items():
+        st.session_state[key] = value
+
+def reset_parameters():
+    """Resets all input widgets to their default values."""
+    for key, value in defaults.items():
+        st.session_state[key] = value
+    st.session_state.prediction_made = False
 
 st.title('Pima Indians Diabetes Prediction')
-st.write("Enter the patient's details to predict the likelihood of diabetes.")
+st.write("Enter the patient's details below to predict the likelihood of diabetes.")
 
 if model is not None and scaler is not None:
     
-    with st.sidebar.form(key='prediction_form'):
-        st.header("Patient Input Features")
-        st.write("Adjust the sliders and click 'Run'.")
+    st.subheader("Patient Input Features")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.number_input('Pregnancies', min_value=0, max_value=20, step=1, key='pregnancies')
+        st.number_input('Glucose', min_value=0, max_value=200, step=1, key='glucose')
+        st.number_input('BloodPressure', min_value=0, max_value=140, step=1, key='blood_pressure')
+        st.number_input('SkinThickness', min_value=0, max_value=100, step=1, key='skin_thickness')
+    
+    with col2:
+        st.number_input('Insulin', min_value=0, max_value=900, step=1, key='insulin')
+        st.number_input('BMI', min_value=0.0, max_value=70.0, step=0.1, key='bmi')
+        st.number_input('DiabetesPedigreeFunction', min_value=0.0, max_value=3.0, step=0.01, key='pedigree')
+        st.number_input('Age', min_value=0, max_value=120, step=1, key='age')
 
-        pregnancies = st.number_input('Pregnancies', min_value=0, max_value=20, value=1, step=1)
-        glucose = st.number_input('Glucose', min_value=0, max_value=200, value=100, step=1)
-        blood_pressure = st.number_input('BloodPressure', min_value=0, max_value=140, value=70, step=1)
-        skin_thickness = st.number_input('SkinThickness', min_value=0, max_value=100, value=20, step=1)
-        insulin = st.number_input('Insulin', min_value=0, max_value=900, value=80, step=1)
-        bmi = st.number_input('BMI', min_value=0.0, max_value=70.0, value=32.0, step=0.1)
-        pedigree = st.number_input('DiabetesPedigreeFunction', min_value=0.0, max_value=3.0, value=0.4, step=0.01)
-        age = st.number_input('Age', min_value=0, max_value=120, value=30, step=1)
+    st.write("---") 
 
-        submit_button = st.form_submit_button(label='Run Prediction')
-
-
-    if submit_button:
+    if st.button('Run Prediction'):
+        st.session_state.prediction_made = True
+        
         try:
             input_data = np.array([[
-                pregnancies,
-                glucose,
-                blood_pressure,
-                skin_thickness,
-                insulin,
-                bmi,
-                pedigree,
-                age
+                st.session_state.pregnancies,
+                st.session_state.glucose,
+                st.session_state.blood_pressure,
+                st.session_state.skin_thickness,
+                st.session_state.insulin,
+                st.session_state.bmi,
+                st.session_state.pedigree,
+                st.session_state.age
             ]])
 
             scaled_input_data = scaler.transform(input_data)
@@ -80,11 +94,11 @@ if model is not None and scaler is not None:
             else:
                 st.success("Result: **Negative for Diabetes** (Probability <= 0.5)")
                 
-            with st.expander("Show Scaled Input Data (for debugging)"):
-                st.write(scaled_input_data)
-
         except Exception as e:
             st.error(f"An error occurred during prediction: {e}")
+
+    if st.session_state.prediction_made:
+        st.button('Reset Parameters', on_click=reset_parameters)
 
 else:
     st.error("Model and/or scaler failed to load. Please check your files.")
