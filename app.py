@@ -35,41 +35,42 @@ def get_feature_names():
         'Age'
     ]
 
-st.title('🩺 Pima Indians Diabetes Prediction')
-st.write("Enter the patient's details below to predict the likelihood of diabetes.")
+st.title('Pima Indians Diabetes Prediction')
+st.write("Enter the patient's details to predict the likelihood of diabetes.")
 
 if model is not None and scaler is not None:
-    st.sidebar.header("Patient Input Features")
-    st.sidebar.write("Adjust the sliders to match the patient's data.")
-
-    feature_names = get_feature_names()
-    user_inputs = {}
     
-    user_inputs['Pregnancies'] = st.sidebar.number_input('Pregnancies', min_value=0, max_value=20, value=1, step=1)
-    user_inputs['Glucose'] = st.sidebar.number_input('Glucose', min_value=0, max_value=200, value=100, step=1)
-    user_inputs['BloodPressure'] = st.sidebar.number_input('BloodPressure', min_value=0, max_value=140, value=70, step=1)
-    user_inputs['SkinThickness'] = st.sidebar.number_input('SkinThickness', min_value=0, max_value=100, value=20, step=1)
-    user_inputs['Insulin'] = st.sidebar.number_input('Insulin', min_value=0, max_value=900, value=80, step=1)
-    user_inputs['BMI'] = st.sidebar.number_input('BMI', min_value=0.0, max_value=70.0, value=32.0, step=0.1)
-    user_inputs['DiabetesPedigreeFunction'] = st.sidebar.number_input('DiabetesPedigreeFunction', min_value=0.0, max_value=3.0, value=0.4, step=0.01)
-    user_inputs['Age'] = st.sidebar.number_input('Age', min_value=0, max_value=120, value=30, step=1)
+    with st.sidebar.form(key='prediction_form'):
+        st.header("Patient Input Features")
+        st.write("Adjust the sliders and click 'Run'.")
 
-    st.subheader("Prediction")
-    
-    if st.button('Run Prediction'):
+        pregnancies = st.number_input('Pregnancies', min_value=0, max_value=20, value=1, step=1)
+        glucose = st.number_input('Glucose', min_value=0, max_value=200, value=100, step=1)
+        blood_pressure = st.number_input('BloodPressure', min_value=0, max_value=140, value=70, step=1)
+        skin_thickness = st.number_input('SkinThickness', min_value=0, max_value=100, value=20, step=1)
+        insulin = st.number_input('Insulin', min_value=0, max_value=900, value=80, step=1)
+        bmi = st.number_input('BMI', min_value=0.0, max_value=70.0, value=32.0, step=0.1)
+        pedigree = st.number_input('DiabetesPedigreeFunction', min_value=0.0, max_value=3.0, value=0.4, step=0.01)
+        age = st.number_input('Age', min_value=0, max_value=120, value=30, step=1)
+
+        submit_button = st.form_submit_button(label='Run Prediction')
+
+
+    if submit_button:
         try:
             input_data = np.array([[
-                user_inputs['Pregnancies'],
-                user_inputs['Glucose'],
-                user_inputs['BloodPressure'],
-                user_inputs['SkinThickness'],
-                user_inputs['Insulin'],
-                user_inputs['BMI'],
-                user_inputs['DiabetesPedigreeFunction'],
-                user_inputs['Age']
+                pregnancies,
+                glucose,
+                blood_pressure,
+                skin_thickness,
+                insulin,
+                bmi,
+                pedigree,
+                age
             ]])
 
             scaled_input_data = scaler.transform(input_data)
+
             prediction_prob = model.predict(scaled_input_data)[0][0]
             prediction_class = 1 if prediction_prob > 0.5 else 0
 
